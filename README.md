@@ -77,17 +77,3 @@ Before running or building the app, make sure you have the following installed o
    cargo tauri build
    ```
    *The compiled installer/bundle for your system will be saved in `src-tauri/target/release/bundle/`.*
-
----
-
-## 🤖 CI/CD Workflow
-
-The project contains a pre-configured GitHub Actions workflow located in `.github/workflows/release.yml` that builds cross-platform executables and automatically attaches them to a new GitHub Release.
-
-### How to trigger a Release:
-- **Manual Trigger (Recommended)**: Go to the GitHub Actions tab, select the **Release** workflow, and click **Run workflow**. You can specify the tag version (e.g. `v0.1.1`).
-- **Tag Trigger**: Push a tag starting with `v` (e.g., `v0.1.1`):
-  ```bash
-  git tag v0.1.1
-  git push origin v0.1.1
-  ```
