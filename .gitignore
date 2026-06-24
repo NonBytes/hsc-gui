@@ -2,3 +2,4 @@
 /src-tauri/gen/
 .DS_Store
 node_modules/
+HANDOFF.md
