@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicholasbalamy/tauri/dev/crates/tauri-config-schema/schema.json",
+  "productName": "HSC GUI",
+  "version": "0.1.0",
+  "identifier": "com.hsc.gui",
+  "build": {
+    "frontendDist": "../src",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Headers Security Checker",
+        "width": 1100,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "withGlobalTauri": true,
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

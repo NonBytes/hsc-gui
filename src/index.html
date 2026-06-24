@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Headers Security Checker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="header-row">
+        <h1>Headers Security Checker</h1>
+        <button id="theme-toggle" class="btn-icon" title="Toggle theme">
+          <span id="theme-icon">&#9790;</span>
+        </button>
+      </div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="scan">Scan</button>
+        <button class="tab" data-tab="batch">Batch Scan</button>
+        <button class="tab" data-tab="file">File Import</button>
+        <button class="tab" data-tab="compare">Compare</button>
+        <button class="tab" data-tab="history">History</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Single URL Scan -->
+      <section id="tab-scan" class="tab-content active">
+        <div class="input-group">
+          <input type="text" id="url-input" placeholder="Enter URL (e.g., https://example.com)" spellcheck="false" />
+          <button id="scan-btn" class="btn-primary">Scan</button>
+        </div>
+        <div class="options-row">
+          <label><input type="checkbox" id="follow-redirects" /> Follow Redirects</label>
+          <button class="btn-text" id="toggle-headers-btn">+ Custom Headers</button>
+        </div>
+        <div id="custom-headers-section" class="hidden">
+          <textarea id="custom-headers" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
+        </div>
+        <div id="scan-loading" class="loading-indicator hidden"><div class="spinner"></div><p>Scanning...</p></div>
+        <div id="scan-results" class="results-container hidden">
+          <div class="results-toolbar">
+            <h2>Results</h2>
+            <div class="export-btns">
+              <button class="btn-small export-json-btn">Export JSON</button>
+              <button class="btn-small export-md-btn">Export Markdown</button>
+            </div>
+          </div>
+          <div class="results-content"></div>
+        </div>
+      </section>
+
+      <!-- Batch Scan -->
+      <section id="tab-batch" class="tab-content">
+        <div class="input-group">
+          <textarea id="batch-urls" placeholder="Enter URLs, one per line&#10;https://example.com&#10;https://another.com" rows="5" spellcheck="false"></textarea>
+        </div>
+        <div class="options-row">
+          <label><input type="checkbox" id="batch-follow-redirects" /> Follow Redirects</label>
+          <button id="batch-scan-btn" class="btn-primary">Scan All</button>
+        </div>
+        <div id="batch-loading" class="loading-indicator hidden">
+          <div class="spinner"></div>
+          <p id="batch-progress-text">Scanning...</p>
+          <div class="progress-bar hidden" id="batch-progress-bar"><div class="progress-fill"></div></div>
+        </div>
+        <div id="batch-results" class="results-container hidden">
+          <div class="results-toolbar">
+            <h2>Results</h2>
+            <div class="export-btns">
+              <button class="btn-small" id="export-batch-json-btn">Export JSON</button>
+              <button class="btn-small" id="export-batch-md-btn">Export Markdown</button>
+            </div>
+          </div>
+          <div class="results-content"></div>
+        </div>
+      </section>
+
+      <!-- File Import -->
+      <section id="tab-file" class="tab-content">
+        <div class="file-drop" id="file-drop-zone">
+          <div class="file-actions">
+            <p>Paste raw HTTP response headers or load from file</p>
+            <button id="browse-file-btn" class="btn-small">Browse File...</button>
+          </div>
+          <input type="text" id="file-label" placeholder="Label (optional) e.g., staging.example.com or &quot;My API Server&quot;" spellcheck="false" style="margin-bottom:8px" />
+          <textarea id="file-content" placeholder="HTTP/1.1 200 OK&#10;Content-Type: text/html&#10;X-Frame-Options: DENY&#10;..." rows="8" spellcheck="false"></textarea>
+          <button id="file-scan-btn" class="btn-primary">Analyze Headers</button>
+        </div>
+        <div id="file-loading" class="loading-indicator hidden"><div class="spinner"></div><p>Analyzing...</p></div>
+        <div id="file-results" class="results-container hidden">
+          <div class="results-toolbar">
+            <h2>Results</h2>
+            <div class="export-btns">
+              <button class="btn-small file-export-json-btn">Export JSON</button>
+              <button class="btn-small file-export-md-btn">Export Markdown</button>
+            </div>
+          </div>
+          <div class="results-content"></div>
+        </div>
+      </section>
+
+      <!-- Compare -->
+      <section id="tab-compare" class="tab-content">
+        <div class="compare-mode-tabs">
+          <button class="compare-mode active" data-mode="url">URL vs URL</button>
+          <button class="compare-mode" data-mode="file">URL vs File</button>
+        </div>
+
+        <div id="compare-mode-url" class="compare-mode-content active">
+          <div class="compare-inputs">
+            <div class="compare-col">
+              <label>URL A</label>
+              <input type="text" id="compare-url-a" placeholder="https://example.com" spellcheck="false" />
+            </div>
+            <div class="compare-vs">vs</div>
+            <div class="compare-col">
+              <label>URL B</label>
+              <input type="text" id="compare-url-b" placeholder="https://another.com" spellcheck="false" />
+            </div>
+          </div>
+          <div class="compare-actions">
+            <button id="compare-btn" class="btn-primary">Compare</button>
+            <label><input type="checkbox" id="compare-follow-redirects" /> Follow Redirects</label>
+          </div>
+        </div>
+
+        <div id="compare-mode-file" class="compare-mode-content">
+          <div class="compare-inputs">
+            <div class="compare-col">
+              <label>URL</label>
+              <input type="text" id="compare-file-url" placeholder="https://example.com" spellcheck="false" />
+            </div>
+            <div class="compare-vs">vs</div>
+            <div class="compare-col">
+              <label>File / Paste Headers</label>
+              <input type="text" id="compare-file-label" placeholder="Label (optional)" spellcheck="false" style="margin-bottom:6px" />
+              <textarea id="compare-file-content" placeholder="HTTP/1.1 200 OK&#10;Content-Type: text/html&#10;..." rows="4" spellcheck="false"></textarea>
+              <button id="compare-browse-btn" class="btn-small" style="margin-top:6px">Browse File...</button>
+            </div>
+          </div>
+          <div class="compare-actions">
+            <button id="compare-file-btn" class="btn-primary">Compare</button>
+            <label><input type="checkbox" id="compare-file-follow-redirects" /> Follow Redirects</label>
+          </div>
+        </div>
+
+        <div id="compare-loading" class="loading-indicator hidden"><div class="spinner"></div><p>Scanning...</p></div>
+        <div id="compare-results" class="hidden" style="margin-top:20px">
+          <div class="compare-summary" id="compare-summary"></div>
+          <div class="compare-grid">
+            <div class="compare-panel" id="compare-panel-a"></div>
+            <div class="compare-panel" id="compare-panel-b"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- History -->
+      <section id="tab-history" class="tab-content">
+        <div class="history-toolbar">
+          <h2>Scan History</h2>
+          <button id="clear-history-btn" class="btn-danger">Clear All</button>
+        </div>
+        <input type="text" id="history-search" placeholder="Filter by URL..." spellcheck="false" style="margin-bottom:12px" />
+        <div id="history-list"></div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
