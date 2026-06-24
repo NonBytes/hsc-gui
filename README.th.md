@@ -77,17 +77,3 @@
    cargo tauri build
    ```
    *ไฟล์ตัวติดตั้งสำหรับระบบปฏิบัติการของคุณจะถูกเก็บไว้ที่ `src-tauri/target/release/bundle/`*
-
----
-
-## 🤖 กระบวนการ CI/CD (Workflow)
-
-ตัวโปรเจกต์ได้มีการตั้งค่า Workflow ของ GitHub Actions เอาไว้ที่ `.github/workflows/release.yml` ซึ่งจะทำงานเมื่อมีการสั่งสร้าง Release เพื่อบิลด์ตัวติดตั้งข้ามแพลตฟอร์มโดยอัตโนมัติ
-
-### วิธีการเริ่มรันกระบวนการ Release:
-- **สั่งรันด้วยตัวเอง (Manual Trigger - แนะนำ)**: เข้าไปที่แท็บ **Actions** บนหน้าเว็บ GitHub -> เลือก workflow **Release** -> คลิกปุ่ม **Run workflow** จากนั้นกรอกเวอร์ชันของ Release (เช่น `v0.1.1`) ที่ต้องการ
-- **สั่งรันผ่าน Git Tag**: สร้างและ Push Tag ที่ขึ้นต้นด้วยตัว `v` (เช่น `v0.1.1`):
-  ```bash
-  git tag v0.1.1
-  git push origin v0.1.1
-  ```
