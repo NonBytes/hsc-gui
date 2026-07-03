@@ -421,11 +421,23 @@ fn analyze_cookies(headers: &reqwest::header::HeaderMap) -> Vec<CookieWarning> {
     let mut cookie_warnings = Vec::new();
     for cookie in headers.get_all("set-cookie") {
         let cookie_str = cookie.to_str().unwrap_or("");
-        let mut missing = Vec::new();
+        let mut missing: Vec<String> = Vec::new();
         let lower = cookie_str.to_lowercase();
-        if !lower.contains("httponly") { missing.push("HttpOnly"); }
-        if !lower.contains("secure") { missing.push("Secure"); }
-        if !lower.contains("samesite") { missing.push("SameSite"); }
+        if !lower.contains("httponly") { missing.push("HttpOnly".into()); }
+        if !lower.contains("secure") { missing.push("Secure".into()); }
+        if !lower.contains("samesite") {
+            missing.push("SameSite".into());
+        } else {
+            let samesite_val = lower.split(';')
+                .find_map(|part| {
+                    let t = part.trim();
+                    t.starts_with("samesite=").then(|| t.trim_start_matches("samesite=").trim().to_string())
+                })
+                .unwrap_or_default();
+            if samesite_val != "lax" && samesite_val != "strict" {
+                missing.push(format!("SameSite=Lax/Strict (got '{}')", samesite_val));
+            }
+        }
         if !missing.is_empty() {
             cookie_warnings.push(CookieWarning {
                 name: cookie_str.split('=').next().unwrap_or("Unknown").into(),
