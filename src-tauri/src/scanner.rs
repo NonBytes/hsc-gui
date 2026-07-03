@@ -353,8 +353,12 @@ fn analyze_security_headers(headers: &reqwest::header::HeaderMap) -> (Vec<Header
             if header == "content-security-policy" && !val_str.contains("frame-ancestors") {
                 warnings.push(Warning { header: header.into(), message: "Missing 'frame-ancestors' directive. Set frame-ancestors 'none' or 'self' to prevent Clickjacking.".into(), severity: "warning".into() });
             }
-            if header == "cache-control" && !val_str.contains("no-store") && !val_str.contains("no-cache") {
-                warnings.push(Warning { header: header.into(), message: "Doesn't contain 'no-store' or 'no-cache'.".into(), severity: "warning".into() });
+            if header == "cache-control" {
+                if !val_str.contains("no-store") && !val_str.contains("no-cache") {
+                    warnings.push(Warning { header: header.into(), message: "Doesn't contain 'no-store' or 'no-cache'.".into(), severity: "warning".into() });
+                } else if !val_str.contains("no-store") {
+                    warnings.push(Warning { header: header.into(), message: "Missing 'no-store'. Use no-store to prevent sensitive data from being written to cache.".into(), severity: "warning".into() });
+                }
             }
             if header == "strict-transport-security" {
                 if !val_str.contains("includesubdomains") {
@@ -363,6 +367,9 @@ fn analyze_security_headers(headers: &reqwest::header::HeaderMap) -> (Vec<Header
                 if !val_str.contains("max-age") {
                     warnings.push(Warning { header: header.into(), message: "Missing 'max-age'.".into(), severity: "warning".into() });
                 }
+            }
+            if header == "x-frame-options" && val_str != "deny" && val_str != "sameorigin" {
+                warnings.push(Warning { header: header.into(), message: format!("Value should be 'DENY' or 'SAMEORIGIN' to prevent Clickjacking, got: '{}'.", combined), severity: "warning".into() });
             }
             if header == "x-xss-protection" && val_str == "0" {
                 warnings.push(Warning { header: header.into(), message: "XSS protection explicitly disabled.".into(), severity: "warning".into() });
