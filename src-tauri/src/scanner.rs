@@ -243,9 +243,10 @@ pub async fn scan_url(opts: ScanOptions) -> ScanResult {
     let cookie_warnings = analyze_cookies(&headers);
     analyze_info_leaks(&headers, &mut warnings);
 
-    let mut all_headers = HashMap::new();
+    let mut all_headers: HashMap<String, String> = HashMap::new();
     for (key, value) in headers.iter() {
-        all_headers.insert(key.to_string(), value.to_str().unwrap_or("Non-ASCII").to_string());
+        let v = value.to_str().unwrap_or("Non-ASCII").to_string();
+        all_headers.entry(key.to_string()).and_modify(|e| { e.push_str(", "); e.push_str(&v); }).or_insert(v);
     }
 
     ScanResult {
@@ -306,9 +307,10 @@ pub fn scan_file(content: &str) -> ScanResult {
     let (present_headers, missing_headers, mut warnings) = analyze_security_headers(&headers);
     analyze_info_leaks(&headers, &mut warnings);
 
-    let mut all_headers = HashMap::new();
+    let mut all_headers: HashMap<String, String> = HashMap::new();
     for (key, value) in headers.iter() {
-        all_headers.insert(key.to_string(), value.to_str().unwrap_or("Non-ASCII").to_string());
+        let v = value.to_str().unwrap_or("Non-ASCII").to_string();
+        all_headers.entry(key.to_string()).and_modify(|e| { e.push_str(", "); e.push_str(&v); }).or_insert(v);
     }
 
     ScanResult {
@@ -333,31 +335,34 @@ fn analyze_security_headers(headers: &reqwest::header::HeaderMap) -> (Vec<Header
     let mut warnings = Vec::new();
 
     for &(header, desc) in SECURITY_HEADERS {
-        match headers.get(header) {
-            Some(value) => {
-                let val_str = value.to_str().unwrap_or("").to_lowercase();
-                present.push(HeaderEntry { name: header.into(), value: value.to_str().unwrap_or("Non-ASCII").into(), description: desc.into() });
+        let all_values: Vec<&str> = headers.get_all(header)
+            .iter()
+            .filter_map(|v| v.to_str().ok())
+            .collect();
 
-                if header == "x-content-type-options" && val_str != "nosniff" {
-                    warnings.push(Warning { header: header.into(), message: format!("Value is not 'nosniff': {}", val_str), severity: "warning".into() });
+        if all_values.is_empty() {
+            missing.push(HeaderEntry { name: header.into(), value: String::new(), description: desc.into() });
+        } else {
+            let combined = all_values.join(", ");
+            let val_str = combined.to_lowercase();
+            present.push(HeaderEntry { name: header.into(), value: combined.clone(), description: desc.into() });
+
+            if header == "x-content-type-options" && val_str != "nosniff" {
+                warnings.push(Warning { header: header.into(), message: format!("Value is not 'nosniff': {}", val_str), severity: "warning".into() });
+            }
+            if header == "cache-control" && !val_str.contains("no-store") && !val_str.contains("no-cache") {
+                warnings.push(Warning { header: header.into(), message: "Doesn't contain 'no-store' or 'no-cache'.".into(), severity: "warning".into() });
+            }
+            if header == "strict-transport-security" {
+                if !val_str.contains("includesubdomains") {
+                    warnings.push(Warning { header: header.into(), message: "Missing 'includeSubDomains'.".into(), severity: "warning".into() });
                 }
-                if header == "cache-control" && !val_str.contains("no-store") && !val_str.contains("no-cache") {
-                    warnings.push(Warning { header: header.into(), message: "Doesn't contain 'no-store' or 'no-cache'.".into(), severity: "warning".into() });
-                }
-                if header == "strict-transport-security" {
-                    if !val_str.contains("includesubdomains") {
-                        warnings.push(Warning { header: header.into(), message: "Missing 'includeSubDomains'.".into(), severity: "warning".into() });
-                    }
-                    if !val_str.contains("max-age") {
-                        warnings.push(Warning { header: header.into(), message: "Missing 'max-age'.".into(), severity: "warning".into() });
-                    }
-                }
-                if header == "x-xss-protection" && val_str == "0" {
-                    warnings.push(Warning { header: header.into(), message: "XSS protection explicitly disabled.".into(), severity: "warning".into() });
+                if !val_str.contains("max-age") {
+                    warnings.push(Warning { header: header.into(), message: "Missing 'max-age'.".into(), severity: "warning".into() });
                 }
             }
-            None => {
-                missing.push(HeaderEntry { name: header.into(), value: String::new(), description: desc.into() });
+            if header == "x-xss-protection" && val_str == "0" {
+                warnings.push(Warning { header: header.into(), message: "XSS protection explicitly disabled.".into(), severity: "warning".into() });
             }
         }
     }
