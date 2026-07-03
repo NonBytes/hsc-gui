@@ -350,6 +350,9 @@ fn analyze_security_headers(headers: &reqwest::header::HeaderMap) -> (Vec<Header
             if header == "x-content-type-options" && val_str != "nosniff" {
                 warnings.push(Warning { header: header.into(), message: format!("Value is not 'nosniff': {}", val_str), severity: "warning".into() });
             }
+            if header == "content-security-policy" && !val_str.contains("frame-ancestors") {
+                warnings.push(Warning { header: header.into(), message: "Missing 'frame-ancestors' directive. Set frame-ancestors 'none' or 'self' to prevent Clickjacking.".into(), severity: "warning".into() });
+            }
             if header == "cache-control" && !val_str.contains("no-store") && !val_str.contains("no-cache") {
                 warnings.push(Warning { header: header.into(), message: "Doesn't contain 'no-store' or 'no-cache'.".into(), severity: "warning".into() });
             }
