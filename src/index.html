@@ -113,20 +113,24 @@
             <div class="compare-col">
               <label>URL A</label>
               <input type="text" id="compare-url-a" placeholder="https://example.com" spellcheck="false" />
+              <button class="btn-text compare-headers-toggle" data-target="compare-headers-a" style="margin-top:6px">+ Custom Headers</button>
+              <div id="compare-headers-a" class="hidden" style="margin-top:6px">
+                <textarea id="compare-custom-headers-a" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
+              </div>
             </div>
             <div class="compare-vs">vs</div>
             <div class="compare-col">
               <label>URL B</label>
               <input type="text" id="compare-url-b" placeholder="https://another.com" spellcheck="false" />
+              <button class="btn-text compare-headers-toggle" data-target="compare-headers-b" style="margin-top:6px">+ Custom Headers</button>
+              <div id="compare-headers-b" class="hidden" style="margin-top:6px">
+                <textarea id="compare-custom-headers-b" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
+              </div>
             </div>
           </div>
           <div class="compare-actions">
             <button id="compare-btn" class="btn-primary">Compare</button>
             <label><input type="checkbox" id="compare-follow-redirects" /> Follow Redirects</label>
-            <button class="btn-text" id="compare-toggle-headers-btn">+ Custom Headers</button>
-          </div>
-          <div id="compare-custom-headers-section" class="hidden" style="margin-top:8px">
-            <textarea id="compare-custom-headers" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
           </div>
         </div>
 

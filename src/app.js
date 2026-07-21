@@ -177,8 +177,10 @@ document.addEventListener('click', async (e) => {
 
 // --- Compare ---
 
-document.getElementById('compare-toggle-headers-btn').addEventListener('click', () => {
-  document.getElementById('compare-custom-headers-section').classList.toggle('hidden');
+document.querySelectorAll('.compare-headers-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById(btn.dataset.target).classList.toggle('hidden');
+  });
 });
 
 document.getElementById('compare-file-toggle-headers-btn').addEventListener('click', () => {
@@ -243,16 +245,17 @@ document.getElementById('compare-btn').addEventListener('click', async () => {
   const urlB = document.getElementById('compare-url-b').value.trim();
   if (!urlA || !urlB) return;
   const followRedirects = document.getElementById('compare-follow-redirects').checked;
-  const headersText = document.getElementById('compare-custom-headers').value.trim();
-  const customHeaders = headersText ? headersText.split('\n').filter(h => h.trim()) : [];
+  const parseHeaders = id => (document.getElementById(id).value.trim()).split('\n').filter(h => h.trim());
+  const customHeadersA = parseHeaders('compare-custom-headers-a');
+  const customHeadersB = parseHeaders('compare-custom-headers-b');
 
   document.getElementById('compare-loading').classList.remove('hidden');
   document.getElementById('compare-results').classList.add('hidden');
 
   try {
     const [resultA, resultB] = await Promise.all([
-      invoke('scan_url', { url: urlA, followRedirects, customHeaders }),
-      invoke('scan_url', { url: urlB, followRedirects, customHeaders }),
+      invoke('scan_url', { url: urlA, followRedirects, customHeaders: customHeadersA }),
+      invoke('scan_url', { url: urlB, followRedirects, customHeaders: customHeadersB }),
     ]);
     showCompareResults(resultA, resultB, resultA.final_url || urlA, resultB.final_url || urlB);
   } catch (err) {
