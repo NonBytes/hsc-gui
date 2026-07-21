@@ -285,7 +285,7 @@ function showCompareResults(resultA, resultB, labelA, labelB) {
   const clsA = scoreA >= 70 ? 'score-good' : scoreA >= 40 ? 'score-ok' : 'score-bad';
   const clsB = scoreB >= 70 ? 'score-good' : scoreB >= 40 ? 'score-ok' : 'score-bad';
   const diff = scoreA - scoreB;
-  const diffText = diff > 0 ? `A wins by +${diff}` : diff < 0 ? `B wins by +${Math.abs(diff)}` : 'Tied';
+  const diffText = diff > 0 ? `A +${diff}` : diff < 0 ? `B +${Math.abs(diff)}` : 'Equal';
 
   document.getElementById('compare-summary').innerHTML = `
     <div class="compare-score">
@@ -307,6 +307,23 @@ function showCompareResults(resultA, resultB, labelA, labelB) {
 
   document.getElementById('compare-loading').classList.add('hidden');
   document.getElementById('compare-results').classList.remove('hidden');
+  requestAnimationFrame(alignComparePanels);
+}
+
+function alignComparePanels() {
+  const panelA = document.getElementById('compare-panel-a');
+  const panelB = document.getElementById('compare-panel-b');
+  if (!panelA || !panelB) return;
+  const secA = panelA.querySelectorAll('.result-section');
+  const secB = panelB.querySelectorAll('.result-section');
+  const count = Math.min(secA.length, secB.length);
+  for (let i = 0; i < count; i++) {
+    secA[i].style.minHeight = '';
+    secB[i].style.minHeight = '';
+    const h = Math.max(secA[i].offsetHeight, secB[i].offsetHeight) + 'px';
+    secA[i].style.minHeight = h;
+    secB[i].style.minHeight = h;
+  }
 }
 
 document.getElementById('compare-btn').addEventListener('click', async () => {
