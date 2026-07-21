@@ -123,6 +123,10 @@
           <div class="compare-actions">
             <button id="compare-btn" class="btn-primary">Compare</button>
             <label><input type="checkbox" id="compare-follow-redirects" /> Follow Redirects</label>
+            <button class="btn-text" id="compare-toggle-headers-btn">+ Custom Headers</button>
+          </div>
+          <div id="compare-custom-headers-section" class="hidden" style="margin-top:8px">
+            <textarea id="compare-custom-headers" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
           </div>
         </div>
 
@@ -143,6 +147,10 @@
           <div class="compare-actions">
             <button id="compare-file-btn" class="btn-primary">Compare</button>
             <label><input type="checkbox" id="compare-file-follow-redirects" /> Follow Redirects</label>
+            <button class="btn-text" id="compare-file-toggle-headers-btn">+ Custom Headers (URL)</button>
+          </div>
+          <div id="compare-file-custom-headers-section" class="hidden" style="margin-top:8px">
+            <textarea id="compare-file-custom-headers" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
           </div>
         </div>
 

@@ -177,6 +177,14 @@ document.addEventListener('click', async (e) => {
 
 // --- Compare ---
 
+document.getElementById('compare-toggle-headers-btn').addEventListener('click', () => {
+  document.getElementById('compare-custom-headers-section').classList.toggle('hidden');
+});
+
+document.getElementById('compare-file-toggle-headers-btn').addEventListener('click', () => {
+  document.getElementById('compare-file-custom-headers-section').classList.toggle('hidden');
+});
+
 document.querySelectorAll('.compare-mode').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.compare-mode').forEach(b => b.classList.remove('active'));
@@ -235,14 +243,16 @@ document.getElementById('compare-btn').addEventListener('click', async () => {
   const urlB = document.getElementById('compare-url-b').value.trim();
   if (!urlA || !urlB) return;
   const followRedirects = document.getElementById('compare-follow-redirects').checked;
+  const headersText = document.getElementById('compare-custom-headers').value.trim();
+  const customHeaders = headersText ? headersText.split('\n').filter(h => h.trim()) : [];
 
   document.getElementById('compare-loading').classList.remove('hidden');
   document.getElementById('compare-results').classList.add('hidden');
 
   try {
     const [resultA, resultB] = await Promise.all([
-      invoke('scan_url', { url: urlA, followRedirects, customHeaders: [] }),
-      invoke('scan_url', { url: urlB, followRedirects, customHeaders: [] }),
+      invoke('scan_url', { url: urlA, followRedirects, customHeaders }),
+      invoke('scan_url', { url: urlB, followRedirects, customHeaders }),
     ]);
     showCompareResults(resultA, resultB, resultA.final_url || urlA, resultB.final_url || urlB);
   } catch (err) {
@@ -258,13 +268,15 @@ document.getElementById('compare-file-btn').addEventListener('click', async () =
   if (!url || !content) return;
   const followRedirects = document.getElementById('compare-file-follow-redirects').checked;
   const label = document.getElementById('compare-file-label').value.trim() || 'File Headers';
+  const fileHeadersText = document.getElementById('compare-file-custom-headers').value.trim();
+  const fileCustomHeaders = fileHeadersText ? fileHeadersText.split('\n').filter(h => h.trim()) : [];
 
   document.getElementById('compare-loading').classList.remove('hidden');
   document.getElementById('compare-results').classList.add('hidden');
 
   try {
     const [resultA, resultB] = await Promise.all([
-      invoke('scan_url', { url, followRedirects, customHeaders: [] }),
+      invoke('scan_url', { url, followRedirects, customHeaders: fileCustomHeaders }),
       invoke('scan_file', { content }),
     ]);
     showCompareResults(resultA, resultB, resultA.final_url || url, label);
