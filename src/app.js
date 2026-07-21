@@ -194,7 +194,76 @@ document.querySelectorAll('.compare-mode').forEach(btn => {
     btn.classList.add('active');
     document.getElementById(`compare-mode-${btn.dataset.mode}`).classList.add('active');
     document.getElementById('compare-results').classList.add('hidden');
+    if (btn.dataset.mode === 'history') loadCompareHistoryPicker();
   });
+});
+
+// --- Compare vs History picker ---
+
+let compareHistoryCache = [];
+let selectedHistoryEntry = null;
+
+async function loadCompareHistoryPicker() {
+  try {
+    compareHistoryCache = await invoke('get_history');
+    renderCompareHistPicker(compareHistoryCache);
+  } catch (err) { console.error(err); }
+}
+
+function renderCompareHistPicker(entries) {
+  const query = (document.getElementById('compare-hist-search').value || '').toLowerCase();
+  const filtered = query ? entries.filter(e => e.url.toLowerCase().includes(query)) : entries;
+  const list = document.getElementById('compare-hist-list');
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state" style="padding:16px">No history entries.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(e => {
+    const score = e.result.error ? 0 : calculateScore(e.result);
+    const cls = score >= 70 ? 'status-secure' : score >= 40 ? 'status-warning' : 'status-insecure';
+    const sel = selectedHistoryEntry && selectedHistoryEntry.id === e.id ? ' selected' : '';
+    return `<div class="compare-hist-item${sel}" data-hist-id="${esc(e.id)}">
+      <div class="hist-item-url">${esc(e.url)}</div>
+      <div class="hist-item-meta"><span class="${cls}">Score: ${score}</span><span>${formatDate(e.timestamp)}</span></div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.compare-hist-item').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedHistoryEntry = compareHistoryCache.find(e => e.id === el.dataset.histId) || null;
+      list.querySelectorAll('.compare-hist-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    });
+  });
+}
+
+document.getElementById('compare-hist-search').addEventListener('input', () => {
+  renderCompareHistPicker(compareHistoryCache);
+});
+
+document.getElementById('compare-hist-btn').addEventListener('click', async () => {
+  const url = document.getElementById('compare-hist-url').value.trim();
+  if (!url) return;
+  if (!selectedHistoryEntry) {
+    alert('Please select a history entry to compare against.');
+    return;
+  }
+  const followRedirects = document.getElementById('compare-hist-follow-redirects').checked;
+  const headersText = document.getElementById('compare-hist-custom-headers').value.trim();
+  const customHeaders = headersText ? headersText.split('\n').filter(h => h.trim()) : [];
+  const histLabel = `${selectedHistoryEntry.url} (${formatDate(selectedHistoryEntry.timestamp)})`;
+
+  document.getElementById('compare-loading').classList.remove('hidden');
+  document.getElementById('compare-results').classList.add('hidden');
+
+  try {
+    const liveResult = await invoke('scan_url', { url, followRedirects, customHeaders });
+    showCompareResults(liveResult, selectedHistoryEntry.result, liveResult.final_url || url, histLabel);
+  } catch (err) {
+    document.getElementById('compare-loading').classList.add('hidden');
+    document.getElementById('compare-results').classList.remove('hidden');
+    document.getElementById('compare-summary').innerHTML = `<div class="error-message">${esc(err.toString())}</div>`;
+  }
 });
 
 document.getElementById('compare-browse-btn').addEventListener('click', async () => {

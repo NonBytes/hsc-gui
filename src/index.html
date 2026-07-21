@@ -106,6 +106,7 @@
         <div class="compare-mode-tabs">
           <button class="compare-mode active" data-mode="url">URL vs URL</button>
           <button class="compare-mode" data-mode="file">URL vs File</button>
+          <button class="compare-mode" data-mode="history">URL vs History</button>
         </div>
 
         <div id="compare-mode-url" class="compare-mode-content active">
@@ -155,6 +156,29 @@
           </div>
           <div id="compare-file-custom-headers-section" class="hidden" style="margin-top:8px">
             <textarea id="compare-file-custom-headers" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div id="compare-mode-history" class="compare-mode-content">
+          <div class="compare-inputs">
+            <div class="compare-col">
+              <label>URL (Live Scan)</label>
+              <input type="text" id="compare-hist-url" placeholder="https://example.com" spellcheck="false" />
+              <button class="btn-text compare-headers-toggle" data-target="compare-hist-headers-section" style="margin-top:6px">+ Custom Headers</button>
+              <div id="compare-hist-headers-section" class="hidden" style="margin-top:6px">
+                <textarea id="compare-hist-custom-headers" placeholder="Authorization: Bearer token&#10;Cookie: session=xyz" rows="3" spellcheck="false"></textarea>
+              </div>
+            </div>
+            <div class="compare-vs">vs</div>
+            <div class="compare-col">
+              <label>History Entry</label>
+              <input type="text" id="compare-hist-search" placeholder="Search history..." spellcheck="false" style="margin-bottom:8px" />
+              <div id="compare-hist-list" class="compare-hist-list"></div>
+            </div>
+          </div>
+          <div class="compare-actions">
+            <button id="compare-hist-btn" class="btn-primary">Compare</button>
+            <label><input type="checkbox" id="compare-hist-follow-redirects" /> Follow Redirects</label>
           </div>
         </div>
 
